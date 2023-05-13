@@ -2,3 +2,12 @@ week_1_basics_n_setup/2_docker_sql/ny_taxi_postgres_data/*
 
 *.csv
 *.parquet
+
+*.tfstate
+*.tfstate.*
+**.terraform
+**.terraform.lock.*
+**google_credentials.json
+**logs/
+**.env
+**__pycache__/
