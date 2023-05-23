@@ -67,18 +67,19 @@ x-airflow-common:
     GCP_PROJECT_ID: 'organic-lacing-386608'
     GCP_GCS_BUCKET: 'dtc_data_lake_organic-lacing-386608'
 
-    PG_HOST: "$(PG_HOST)"
-    PG_USER: "$(PG_USER)" 
-    PG_PASSWORD: "$(PG_PASSWORD)" 
-    PG_PORT: "$(PG_PORT)"
-    PG_DATABASE: "$(PG_DATABASE)" 
+    PG_HOST: "${PG_HOST}"
+    PG_USER: "${PG_USER}" 
+    PG_PASSWORD: "${PG_PASSWORD}" 
+    PG_PORT: "${PG_PORT}"
+    PG_DATABASE: "${PG_DATABASE}" 
 
 
 
 
 
   volumes:
-    - ./dags_new:/opt/airflow/dags
+    - ./dags:/opt/airflow/dags
+   # - ./dags_new:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
     - ./plugins:/opt/airflow/plugins
     - ~/.google/credentials/:/.google/credentials:ro
