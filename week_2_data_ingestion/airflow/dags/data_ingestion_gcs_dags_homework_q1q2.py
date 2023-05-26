@@ -6,6 +6,8 @@ from airflow.utils.dates import days_ago
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
 
+from datetime import datetime
+
 from google.cloud import storage
 from airflow.providers.google.cloud.operators.bigquery import BigQueryCreateExternalTableOperator
 import pyarrow.csv as pv
@@ -13,17 +15,20 @@ import pyarrow.parquet as pq
 
 PROJECT_ID = os.environ.get("GCP_PROJECT_ID")
 BUCKET = os.environ.get("GCP_GCS_BUCKET")
-
+BIGQUERY_DATASET = os.environ.get("BIGQUERY_DATASET", 'trips_data_all')
 #dataset_file = "yellow_tripdata_2021-01.csv"
-dataset_file = "yellow_tripdata_2021-01.parquet"
+#dataset_file = "yellow_tripdata_2021-01.parquet"
 #dataset_url = f"https://s3.amazonaws.com/nyc-tlc/trip+data/{dataset_file}"
-dataset_url = f"https://d37ci6vzurychx.cloudfront.net/trip-data/{dataset_file}"
+#dataset_url = f"https://d37ci6vzurychx.cloudfront.net/trip-data/{dataset_file}"
 path_to_local_home = os.environ.get("AIRFLOW_HOME", "/opt/airflow/")
-parquet_file = dataset_file
+#parquet_file = dataset_file
 #parquet_file = dataset_file.replace('.csv', '.parquet')
 
-BIGQUERY_DATASET = os.environ.get("BIGQUERY_DATASET", 'trips_data_all')
 
+url_prefix='https://d37ci6vzurychx.cloudfront.net/trip-data'
+url_template= url_prefix + '/yellow_tripdata_{{ execution_date.strftime(\'%Y-%m\') }}.parquet'
+output_file_template = 'yellow_tripdata_{{ execution_date.strftime(\'%Y-%m\') }}.parquet'
+parquet_file = output_file_template
 
 def format_to_parquet(src_file):
     if not src_file.endswith('.csv'):
@@ -57,24 +62,25 @@ def upload_to_gcs(bucket, object_name, local_file):
 
 default_args = {
     "owner": "airflow",
-    "start_date": days_ago(1),
     "depends_on_past": False,
     "retries": 1,
 }
 
 # NOTE: DAG declaration - using a Context Manager (an implicit way)
 with DAG(
-    dag_id="data_ingestion_gcs_dag",
-    schedule_interval="@daily",
+    dag_id="data_ingestion_gcs_dag_homework_q1q2",
+    schedule_interval="0 6 2 * *",
+    start_date=datetime(2019, 1, 1),
+    end_date=datetime(2021, 1, 1),
     default_args=default_args,
-    catchup=False,
-    max_active_runs=1,
-    tags=['dtc-de'],
+    catchup=True,
+    max_active_runs=3,
+    tags=['dtc-de-homework'],
 ) as dag:
 
     download_dataset_task = BashOperator(
         task_id="download_dataset_task",
-        bash_command=f"curl -sSL {dataset_url} > {path_to_local_home}/{dataset_file}"
+        bash_command=f"curl -sSL {url_template} > {path_to_local_home}/{output_file_template}"
     )
 
     # format_to_parquet_task = PythonOperator(
@@ -96,20 +102,25 @@ with DAG(
         },
     )
 
-    bigquery_external_table_task = BigQueryCreateExternalTableOperator(
-        task_id="bigquery_external_table_task",
-        table_resource={
-            "tableReference": {
-                "projectId": PROJECT_ID,
-                "datasetId": BIGQUERY_DATASET,
-                "tableId": "external_table",
-            },
-            "externalDataConfiguration": {
-                "sourceFormat": "PARQUET",
-                "sourceUris": [f"gs://{BUCKET}/raw/{parquet_file}"],
-            },
-        },
+    # bigquery_external_table_task = BigQueryCreateExternalTableOperator(
+    #     task_id="bigquery_external_table_task",
+    #     table_resource={
+    #         "tableReference": {
+    #             "projectId": PROJECT_ID,
+    #             "datasetId": BIGQUERY_DATASET,
+    #             "tableId": "external_table",
+    #         },
+    #         "externalDataConfiguration": {
+    #             "sourceFormat": "PARQUET",
+    #             "sourceUris": [f"gs://{BUCKET}/raw/{parquet_file}"],
+    #         },
+    #     },
+    # )
+
+    remove_files_task = BashOperator(
+        task_id="remove_files_task",
+        bash_command=f"rm {path_to_local_home}/{output_file_template}"
     )
 
     #download_dataset_task >> format_to_parquet_task >> local_to_gcs_task >> bigquery_external_table_task
-    download_dataset_task >> local_to_gcs_task >> bigquery_external_table_task
+    download_dataset_task >> local_to_gcs_task  >> remove_files_task
