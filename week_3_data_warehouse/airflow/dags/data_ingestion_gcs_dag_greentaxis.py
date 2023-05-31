@@ -26,8 +26,8 @@ path_to_local_home = os.environ.get("AIRFLOW_HOME", "/opt/airflow/")
 
 
 url_prefix='https://d37ci6vzurychx.cloudfront.net/trip-data'
-url_template= url_prefix + '/yellow_tripdata_{{ execution_date.strftime(\'%Y-%m\') }}.parquet'
-output_file_template = 'yellow_tripdata_{{ execution_date.strftime(\'%Y-%m\') }}.parquet'
+url_template= url_prefix + '/green_tripdata_{{ execution_date.strftime(\'%Y-%m\') }}.parquet'
+output_file_template = 'green_tripdata_{{ execution_date.strftime(\'%Y-%m\') }}.parquet'
 parquet_file = output_file_template
 
 def format_to_parquet(src_file):
@@ -68,7 +68,7 @@ default_args = {
 
 # NOTE: DAG declaration - using a Context Manager (an implicit way)
 with DAG(
-    dag_id="data_ingestion_gcs_dag_homework_q1q2",
+    dag_id="data_ingestion_gcs_dag_greentaxis",
     schedule_interval="0 6 2 * *",
     start_date=datetime(2019, 1, 1),
     end_date=datetime(2021, 1, 1),
