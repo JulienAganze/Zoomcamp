@@ -65,12 +65,7 @@ with DAG(
             },
         )
 
-        # Get the schema of the external table
-        client = bigquery.Client()
-        external_table = f"{BIGQUERY_DATASET}.{taxi_type}_{DATASET}_external_table"
-        table = client.get_table(external_table)
-        schema_fields = [field.name for field in table.schema]
-
+    
 
         CREATE_BQ_TBL_QUERY = (
             f"CREATE OR REPLACE TABLE {BIGQUERY_DATASET}.{taxi_type}_{DATASET} \
