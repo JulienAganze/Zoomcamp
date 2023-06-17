@@ -1,10 +1,12 @@
 week_1_basics_n_setup/2_docker_sql/ny_taxi_postgres_data/*
 week_1_basics_n_setup/homework/ny_taxi_postgres_data/*
 week_1_basics_n_setup/homework/data_pgadmin/*
+<<<<<<< HEAD
 week_5_batch_processing/zones/*
 week_5_batch_processing/data/pq/green/*/*
-week_5_batch_processing/data/pq/yellow/*/*
 week_5_batch_processing/fhvhv/*/*/*
+=======
+>>>>>>> 84b5273f23381a3199f6bf87cd2d1705bf50d202
 *.csv
 *.csv.gz
 *.parquet
